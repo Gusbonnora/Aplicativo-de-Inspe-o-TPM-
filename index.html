@@ -524,7 +524,7 @@ input:focus,select:focus,textarea:focus{
     <div class="section-title">Identificação do colaborador</div>
     <div class="form-group">
       <label>Matrícula</label>
-      <input id="matricula" type="text" placeholder="Ex: 00123" inputmode="numeric">
+      <input id="matricula" type="number" placeholder="Ex: 00123" inputmode="numeric">
     </div>
     <div class="form-group">
       <label>Nome completo <span style="font-size:12px;color:#888;font-weight:400">(mínimo dois nomes)</span></label>
@@ -628,7 +628,7 @@ input:focus,select:focus,textarea:focus{
       <div class="section-title">Acesso restrito</div>
       <div class="form-group"><label>Senha do administrador</label><input id="admin-pwd" type="password" placeholder="Digite a senha"></div>
       <button class="btn-primary" onclick="checkAdminPwd()">🔓 Entrar</button>
-      <p style="font-size:12px;color:#aaa;margin-top:.5rem;text-align:center">Senha padrão: <strong>admin123</strong></p>
+      <p style="display:none; font-size:12px;color:#aaa;margin-top:.5rem;text-align:center">Senha padrão: <strong>admin123</strong></p>
     </div>
     <div id="admin-content" style="display:none">
       <div class="section-title">Itens do checklist (10 slots)</div>
