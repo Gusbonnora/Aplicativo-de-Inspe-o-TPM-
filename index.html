@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Manutenção Autônoma — BEL</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f4f4f0;min-height:100vh;color:#1a1a1a}
+.app{max-width:860px;margin:0 auto;padding:1rem}
+.screen{display:none}.screen.active{display:block}
+.card{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.header{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.header-title{font-size:17px;font-weight:600}
+.badge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:600}
+.badge-success{background:#dcfce7;color:#166534}
+.badge-danger{background:#fee2e2;color:#991b1b}
+.badge-warning{background:#fef9c3;color:#854d0e}
+.section-title{font-size:12px;font-weight:600;color:#888;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:14px;color:#555;margin-bottom:5px;font-weight:500}
+input,select,textarea{width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:15px;background:#fff;color:#1a1a1a;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#1a237e;box-shadow:0 0 0 3px rgba(26,35,126,.12)}
+.input-error{border-color:#ef4444!important;box-shadow:0 0 0 3px rgba(239,68,68,.12)!important}
+.error-msg{font-size:12px;color:#991b1b;margin-top:4px;display:none}
+.btn-primary{background:#1a237e;color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary:hover{background:#0e1660}
+.btn-secondary{background:#fff;color:#1a1a1a;border:1px solid #d1d5db;padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.btn-secondary:hover{background:#f3f4f6}
+.btn-danger-outline{background:#fff;color:#991b1b;border:1px solid #fca5a5;padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.btn-danger-outline:hover{background:#fee2e2}
+.btn-sm{padding:5px 10px;font-size:12px}
+.item-card{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:1rem;margin-bottom:.75rem}
+.item-header{display:flex;align-items:center;gap:10px;margin-bottom:.75rem}
+.item-num{width:28px;height:28px;border-radius:50%;background:#e8eaf6;color:#1a237e;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.item-title{font-size:15px;font-weight:600;flex:1}
+.ref-photo-box{border:1px solid #e5e5e0;border-radius:8px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;margin-bottom:.75rem;font-size:13px;color:#888;overflow:hidden;position:relative}
+.ref-photo-box img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.ref-photo-box:hover{opacity:.9}
+.status-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:.75rem}
+.status-btn{padding:8px 4px;border-radius:8px;border:1px solid #e5e5e0;background:#f9fafb;font-size:13px;cursor:pointer;text-align:center;font-weight:600;color:#555;transition:all .15s}
+.s-ok{background:#dcfce7;border-color:#86efac;color:#166534}
+.s-at{background:#fef9c3;border-color:#fde047;color:#854d0e}
+.s-nc{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+.photo-capture{border:1px dashed #d1d5db;border-radius:8px;padding:1rem;text-align:center;cursor:pointer;background:#f9fafb;margin-bottom:.75rem}
+.photo-capture:hover{background:#f3f4f6}
+.photo-done{border:1px solid #86efac;border-radius:8px;padding:.5rem;text-align:center;background:#f0fdf4;margin-bottom:.75rem}
+.photo-done img{width:100%;max-height:120px;object-fit:cover;border-radius:6px}
+.obs-field{width:100%;font-size:13px;padding:8px;border-radius:8px;border:1px solid #d1d5db;resize:none;font-family:inherit}
+.progress-bar{height:8px;background:#e5e5e0;border-radius:4px;margin:.5rem 0}
+.progress-fill{height:100%;background:#1a237e;border-radius:4px;transition:width .3s}
+.sign-canvas{border:1px solid #d1d5db;border-radius:8px;width:100%;height:160px;cursor:crosshair;touch-action:none;background:#fff;display:block}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:12px;padding:1.25rem;width:95%;max-width:520px;border:1px solid #e5e5e0;max-height:90vh;overflow-y:auto}
+.alert-box{padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:14px;display:flex;align-items:flex-start;gap:8px}
+.alert-danger{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.alert-success{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.hist-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid #f3f4f6;gap:8px;flex-wrap:wrap}
+.hist-row:last-child{border-bottom:none}
+.tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #e5e5e0;background:#f9fafb;color:#555;font-weight:500}
+.tab.active{background:#e8eaf6;color:#1a237e;border-color:#9fa8da}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem}
+.metric{background:#f9fafb;border-radius:8px;padding:.75rem;text-align:center;border:1px solid #e5e5e0}
+.metric-num{font-size:24px;font-weight:700}
+.metric-label{font-size:12px;color:#888;margin-top:2px}
+.bel-header{background:#1a237e;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem}
+.bel-logo{width:52px;height:52px;border-radius:10px;flex-shrink:0;object-fit:contain;background:#fff;padding:4px}
+.bel-header-text{color:#fff}
+.bel-header-text h1{font-size:18px;font-weight:700}
+.bel-header-text p{font-size:13px;opacity:.75;margin-top:2px}
+.toggle{position:relative;width:36px;height:20px;display:inline-block;vertical-align:middle}
+.toggle input{display:none}
+.toggle-slider{position:absolute;inset:0;border-radius:20px;background:#d1d5db;cursor:pointer;transition:.2s}
+.toggle input:checked+.toggle-slider{background:#1a237e}
+.toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s}
+.toggle input:checked+.toggle-slider:before{left:19px}
+.admin-item{background:#f9fafb;border:1px solid #e5e5e0;border-radius:8px;padding:.75rem;margin-bottom:.5rem;display:flex;align-items:flex-start;gap:8px}
+.admin-item-num{width:24px;height:24px;border-radius:50%;background:#e8eaf6;color:#1a237e;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+.admin-inputs{flex:1;display:flex;flex-direction:column;gap:6px}
+.admin-inputs input,.admin-inputs textarea{font-size:13px;padding:7px 10px}
+.admin-inputs textarea{resize:none}
+.ref-upload-box{border:1px dashed #d1d5db;border-radius:8px;padding:.75rem;display:flex;align-items:center;gap:10px;background:#fff;cursor:pointer}
+.ref-upload-box:hover{background:#f9fafb}
+.ref-thumb{width:56px;height:56px;border-radius:6px;object-fit:cover;border:1px solid #e5e5e0;flex-shrink:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:20px}
+.ref-thumb img{width:100%;height:100%;object-fit:cover;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- LOGIN -->
+<div class="screen active" id="screen-login">
+  <div class="bel-header">
+    <img class="bel-logo" id="logo-login" src="" alt="BEL">
+    <div class="bel-header-text">
+      <h1>Manutenção Autônoma</h1>
+      <p>Checklist de inspeção de equipamentos</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title">Identificação do colaborador</div>
+    <div class="form-group">
+      <label>Matrícula</label>
+      <input id="matricula" type="text" placeholder="Ex: 00123" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label>Nome completo <span style="font-size:12px;color:#888;font-weight:400">(mínimo dois nomes)</span></label>
+      <input id="nome" type="text" placeholder="Ex: José Carlos" oninput="validarNome(this)">
+      <div class="error-msg" id="nome-erro">Digite o nome completo com pelo menos dois nomes.</div>
+    </div>
+    <div class="form-group">
+      <label>Equipamento</label>
+      <select id="maquina">
+        <option value="">Selecione o equipamento...</option>
+        <option>Curvadeira Tecnomaq TM.TH100V</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="iniciarChecklist()">✅ Iniciar inspeção</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="card" style="margin-bottom:0;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-weight:600;font-size:15px">Histórico</div><div style="font-size:13px;color:#888" id="hist-count-label">0 registros</div></div>
+      <button class="btn-secondary btn-sm" onclick="goScreen('screen-historico')">🕐 Ver</button>
+    </div>
+    <div class="card" style="margin-bottom:0;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-weight:600;font-size:15px">Administrador</div><div style="font-size:13px;color:#888">Configurações</div></div>
+      <button class="btn-secondary btn-sm" onclick="goAdmin()">⚙️ Acessar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKLIST -->
+<div class="screen" id="screen-checklist">
+  <div class="bel-header" style="padding:.75rem 1.25rem">
+    <img class="bel-logo" id="logo-chk" src="" alt="BEL" style="width:40px;height:40px">
+    <div style="flex:1;color:#fff">
+      <div style="font-weight:700;font-size:15px" id="hdr-maquina"></div>
+      <div style="font-size:12px;opacity:.75" id="hdr-info"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="background:rgba(255,255,255,.2);color:#fff;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:600" id="hdr-prog">0/0</span>
+      <button onclick="cancelarInspecao()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:5px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">✕ Cancelar</button>
+    </div>
+  </div>
+  <div class="card" style="padding:.75rem 1.25rem">
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:#888;margin-bottom:4px"><span>Progresso da inspeção</span><span id="prog-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-bar" style="width:0%"></div></div>
+  </div>
+  <div id="items-container"></div>
+  <div id="alert-nc" class="alert-box alert-danger" style="display:none">⚠️ <span id="alert-nc-msg"></span></div>
+  <div class="card">
+    <div class="section-title">Assinatura digital</div>
+    <p style="font-size:13px;color:#888;margin-bottom:.75rem">Assine com o dedo para confirmar a inspeção</p>
+    <canvas class="sign-canvas" id="signCanvas" width="800" height="200"></canvas>
+    <div style="display:flex;gap:8px;margin-top:.75rem">
+      <button class="btn-secondary" onclick="clearSign()" style="flex:1">🧹 Limpar</button>
+      <button class="btn-primary" onclick="finalizarChecklist()" style="flex:2">📤 Finalizar inspeção</button>
+    </div>
+  </div>
+</div>
+
+<!-- TELA OK -->
+<div class="screen" id="screen-ok">
+  <div class="bel-header">
+    <img class="bel-logo" id="logo-ok" src="" alt="BEL">
+    <div style="color:#fff"><div style="font-size:18px;font-weight:700">✅ Inspeção finalizada!</div><div style="font-size:13px;opacity:.75" id="ok-sub"></div></div>
+  </div>
+  <div class="card" id="ok-summary"></div>
+  <div id="ok-nc-alert" class="alert-box alert-danger" style="display:none">⚠️ <div><strong>Itens não conformes!</strong><br><span id="ok-nc-list"></span><br><em>Notifique a manutenção imediatamente.</em></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <button class="btn-secondary" onclick="gerarPDF()">📄 Exportar PDF</button>
+    <button class="btn-primary" onclick="goScreen('screen-login')">🏠 Início</button>
+  </div>
+</div>
+
+<!-- HISTÓRICO -->
+<div class="screen" id="screen-historico">
+  <div class="header"><div class="header-title">🕐 Histórico de inspeções</div><button class="btn-secondary btn-sm" onclick="goScreen('screen-login')">← Voltar</button></div>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" onclick="filterHist('todos',this)">Todos</div>
+      <div class="tab" onclick="filterHist('ok',this)">Conformes</div>
+      <div class="tab" onclick="filterHist('nc',this)">Com NC</div>
+    </div>
+    <div id="hist-list"></div>
+  </div>
+</div>
+
+<!-- DETALHE -->
+<div class="screen" id="screen-detalhe">
+  <div class="header"><div class="header-title">📋 Detalhe da inspeção</div><button class="btn-secondary btn-sm" onclick="goScreen('screen-historico')">← Voltar</button></div>
+  <div id="detalhe-content"></div>
+</div>
+
+<!-- ADMIN -->
+<div class="screen" id="screen-admin">
+  <div class="bel-header" style="padding:.75rem 1.25rem">
+    <img class="bel-logo" id="logo-adm" src="" alt="BEL" style="width:40px;height:40px">
+    <div style="color:#fff;flex:1"><div style="font-weight:700">⚙️ Administrador</div><div style="font-size:12px;opacity:.75">Configuração do checklist</div></div>
+    <button class="btn-secondary btn-sm" onclick="goScreen('screen-login')">← Sair</button>
+  </div>
+  <div class="card">
+    <div id="admin-lock">
+      <div class="section-title">Acesso restrito</div>
+      <div class="form-group"><label>Senha do administrador</label><input id="admin-pwd" type="password" placeholder="Digite a senha"></div>
+      <button class="btn-primary" onclick="checkAdminPwd()">🔓 Entrar</button>
+      <p style="font-size:12px;color:#aaa;margin-top:.5rem;text-align:center">Senha padrão: <strong>admin123</strong></p>
+    </div>
+    <div id="admin-content" style="display:none">
+      <div class="section-title">Itens do checklist (10 slots)</div>
+      <p style="font-size:13px;color:#888;margin-bottom:.75rem">Ative/desative e personalize título, descrição e foto de referência de cada item.</p>
+      <div id="admin-items"></div>
+      <button class="btn-primary" onclick="salvarAdmin()" style="margin-top:.75rem">💾 Salvar configuração</button>
+      <div id="admin-ok" class="alert-box alert-success" style="display:none;margin-top:.75rem">✅ Configuração salva com sucesso!</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title">Logo da empresa</div>
+    <p style="font-size:13px;color:#888;margin-bottom:.75rem">Faça upload da logo para exibir no aplicativo (PNG, JPG ou SVG).</p>
+    <input type="file" id="logo-upload" accept="image/*" onchange="uploadLogo(this)" style="font-size:13px">
+  </div>
+</div>
+
+<!-- MODAL CÂMERA -->
+<div class="modal-overlay" id="modal-cam">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <strong id="cam-title" style="font-size:15px">Capturar foto</strong>
+      <button class="btn-secondary btn-sm" onclick="closeCamera()">✕</button>
+    </div>
+    <div style="background:#000;border-radius:8px;overflow:hidden;min-height:180px;display:flex;align-items:center;justify-content:center">
+      <video id="camVideo" autoplay playsinline style="width:100%;max-height:280px;object-fit:cover;display:none"></video>
+      <canvas id="camCanvas" style="display:none"></canvas>
+      <div id="cam-msg" style="color:#fff;font-size:14px;padding:2rem;text-align:center">📷<br>Iniciando câmera...</div>
+    </div>
+    <button class="btn-primary" onclick="capturePhoto()" style="margin-top:.75rem">📸 Tirar foto agora</button>
+    <p style="font-size:12px;color:#888;text-align:center;margin-top:.5rem">🔒 Somente câmera ao vivo — galeria bloqueada</p>
+  </div>
+</div>
+
+<!-- MODAL REFERÊNCIA -->
+<div class="modal-overlay" id="modal-ref">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <strong id="ref-modal-title" style="font-size:15px">📌 Foto de referência</strong>
+      <button class="btn-secondary btn-sm" onclick="closeRef()">✕</button>
+    </div>
+    <div id="ref-content"></div>
+  </div>
+</div>
+
+<!-- MODAL CANCELAR -->
+<div class="modal-overlay" id="modal-cancel">
+  <div class="modal-box" style="max-width:380px">
+    <div style="text-align:center;padding:.5rem 0 1rem">
+      <div style="font-size:40px;margin-bottom:.5rem">⚠️</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:.5rem">Cancelar inspeção?</div>
+      <p style="font-size:14px;color:#666">Todo o progresso desta inspeção será perdido. Deseja continuar?</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn-secondary" onclick="closeCancel()">Não, continuar</button>
+      <button class="btn-danger-outline" onclick="confirmarCancelamento()">Sim, cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_ITEMS=[
+  {id:1,ativo:true,title:"Nível de óleo lubrificante",desc:"Verificar se o nível está entre MIN e MAX no visor lateral",foto:null},
+  {id:2,ativo:true,title:"Vazamentos visíveis",desc:"Inspecionar entorno em busca de óleo, graxa ou fluido derramado",foto:null},
+  {id:3,ativo:true,title:"Correia / transmissão",desc:"Verificar tensão e integridade da correia de transmissão",foto:null},
+  {id:4,ativo:true,title:"Temperatura de operação",desc:"Verificar indicador de temperatura — deve estar na faixa verde",foto:null},
+  {id:5,ativo:true,title:"Fixação de painéis e tampas",desc:"Confirmar que todos os painéis estão fixos, sem folga ou parafusos faltando",foto:null},
+  {id:6,ativo:true,title:"Ruídos ou vibrações anormais",desc:"Acionar por 30 segundos e escutar ruídos ou vibrações incomuns",foto:null},
+  {id:7,ativo:true,title:"Limpeza geral da máquina",desc:"Verificar se a máquina e área ao redor estão limpas e sem resíduos",foto:null},
+  {id:8,ativo:false,title:"Item 8",desc:"Descreva o que deve ser verificado neste item",foto:null},
+  {id:9,ativo:false,title:"Item 9",desc:"Descreva o que deve ser verificado neste item",foto:null},
+  {id:10,ativo:false,title:"Item 10",desc:"Descreva o que deve ser verificado neste item",foto:null}
+];
+const CORES=['#1a237e','#166534','#854d0e','#991b1b','#1a237e','#5b21b6','#0f766e','#1a237e','#854d0e','#166534'];
+const BEL_SVG='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="%231a237e"/><ellipse cx="50" cy="38" rx="28" ry="18" fill="none" stroke="white" stroke-width="7"/><path d="M28 30 Q50 10 72 38 Q50 55 28 42 Z" fill="white"/><text x="50" y="82" text-anchor="middle" font-size="32" font-weight="900" font-family="system-ui" fill="white">bel</text></svg>';
+
+function loadItems(){try{const s=localStorage.getItem('ma_items');return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_ITEMS));}catch{return JSON.parse(JSON.stringify(DEFAULT_ITEMS));}}
+function saveItems(it){try{localStorage.setItem('ma_items',JSON.stringify(it));}catch(e){}}
+function loadHistory(){try{return JSON.parse(localStorage.getItem('ma_history')||'[]');}catch{return[];}}
+function saveHistory(h){try{localStorage.setItem('ma_history',JSON.stringify(h));}catch(e){alert('Erro ao salvar: '+e.message);}}
+function loadLogo(){return localStorage.getItem('ma_logo')||'';}
+function saveLogo(d){try{localStorage.setItem('ma_logo',d);}catch(e){}}
+function applyLogos(){
+  const src=loadLogo()||BEL_SVG;
+  ['logo-login','logo-chk','logo-ok','logo-adm'].forEach(id=>{const el=document.getElementById(id);if(el)el.src=src;});
+}
+
+// NAVEGAÇÃO
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-historico')renderHist('todos');
+  if(id==='screen-login'){
+    const h=loadHistory();
+    const el=document.getElementById('hist-count-label');
+    if(el)el.textContent=h.length+' registro(s)';
+    applyLogos();
+  }
+}
+
+// VALIDAÇÃO NOME
+function validarNome(input){
+  const val=input.value.trim();
+  const partes=val.split(/\s+/).filter(p=>p.length>0);
+  const erro=document.getElementById('nome-erro');
+  if(val.length>0 && partes.length<2){
+    input.classList.add('input-error');
+    erro.style.display='block';
+    return false;
+  } else {
+    input.classList.remove('input-error');
+    erro.style.display='none';
+    return true;
+  }
+}
+
+// CANCELAR INSPEÇÃO
+function cancelarInspecao(){document.getElementById('modal-cancel').classList.add('open');}
+function closeCancel(){document.getElementById('modal-cancel').classList.remove('open');}
+function confirmarCancelamento(){
+  closeCancel();
+  closeCamera();
+  goScreen('screen-login');
+}
+
+// ADMIN
+function goAdmin(){
+  document.getElementById('admin-lock').style.display='block';
+  document.getElementById('admin-content').style.display='none';
+  document.getElementById('admin-pwd').value='';
+  applyLogos();
+  goScreen('screen-admin');
+}
+function checkAdminPwd(){
+  if(document.getElementById('admin-pwd').value==='admin123'){
+    document.getElementById('admin-lock').style.display='none';
+    document.getElementById('admin-content').style.display='block';
+    buildAdminItems();
+  } else alert('Senha incorreta.');
+}
+
+// Admin: foto de referência por item (armazenada em memória durante sessão de edição)
+const adminRefFotos={};
+
+function buildAdminItems(){
+  const items=loadItems();
+  // Inicializa fotos do admin com as salvas
+  items.forEach(it=>{if(it.foto)adminRefFotos[it.id]=it.foto;});
+  const c=document.getElementById('admin-items');c.innerHTML='';
+  items.forEach(it=>{
+    const d=document.createElement('div');d.className='admin-item';
+    const temFoto=!!it.foto;
+    d.innerHTML=`<div class="admin-item-num">${it.id}</div>
+    <div class="admin-inputs">
+      <div style="display:flex;align-items:center;gap:8px">
+        <label class="toggle"><input type="checkbox" id="ativo-${it.id}" ${it.ativo?'checked':''}><span class="toggle-slider"></span></label>
+        <span id="lbl-${it.id}" style="font-size:13px;font-weight:600;color:${it.ativo?'#1a237e':'#aaa'}">${it.ativo?'Ativo':'Inativo'}</span>
+      </div>
+      <input id="tit-${it.id}" type="text" value="${it.title}" placeholder="Nome do item">
+      <textarea id="dsc-${it.id}" rows="2" placeholder="Descrição / o que verificar...">${it.desc||''}</textarea>
+      <div class="ref-upload-box" onclick="document.getElementById('ref-file-${it.id}').click()">
+        <div class="ref-thumb" id="ref-thumb-${it.id}">
+          ${temFoto?`<img src="${it.foto}" alt="ref">`:'📷'}
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#1a237e">Foto de referência</div>
+          <div style="font-size:12px;color:#888" id="ref-label-${it.id}">${temFoto?'Foto cadastrada — toque para alterar':'Toque para fazer upload da foto padrão'}</div>
+        </div>
+      </div>
+      <input type="file" id="ref-file-${it.id}" accept="image/*" style="display:none" onchange="carregarRefFoto(${it.id},this)">
+    </div>`;
+    c.appendChild(d);
+    document.getElementById('ativo-'+it.id).onchange=function(){
+      const l=document.getElementById('lbl-'+it.id);
+      l.textContent=this.checked?'Ativo':'Inativo';
+      l.style.color=this.checked?'#1a237e':'#aaa';
+    };
+  });
+}
+
+function carregarRefFoto(id,input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    adminRefFotos[id]=e.target.result;
+    const thumb=document.getElementById('ref-thumb-'+id);
+    if(thumb)thumb.innerHTML=`<img src="${e.target.result}" alt="ref">`;
+    const lbl=document.getElementById('ref-label-'+id);
+    if(lbl)lbl.textContent='Foto cadastrada — toque para alterar';
+  };
+  r.readAsDataURL(f);
+}
+
+function salvarAdmin(){
+  const items=loadItems();
+  items.forEach(it=>{
+    it.ativo=document.getElementById('ativo-'+it.id).checked;
+    it.title=document.getElementById('tit-'+it.id).value.trim()||'Item '+it.id;
+    it.desc=document.getElementById('dsc-'+it.id).value.trim();
+    if(adminRefFotos[it.id])it.foto=adminRefFotos[it.id];
+  });
+  saveItems(items);
+  const ok=document.getElementById('admin-ok');ok.style.display='flex';
+  setTimeout(()=>ok.style.display='none',2500);
+}
+
+function uploadLogo(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{saveLogo(e.target.result);applyLogos();alert('Logo atualizada com sucesso!');};
+  r.readAsDataURL(f);
+}
+
+// CHECKLIST
+let state={},currentCamItem=null,camStream=null,signCtx=null,signDrawing=false;
+
+function iniciarChecklist(){
+  const mat=document.getElementById('matricula').value.trim();
+  const nomeInput=document.getElementById('nome');
+  const nom=nomeInput.value.trim();
+  const maq=document.getElementById('maquina').value;
+  if(!mat){alert('Informe a matrícula.');return;}
+  // Validação de dois nomes
+  const partes=nom.split(/\s+/).filter(p=>p.length>0);
+  if(partes.length<2){
+    nomeInput.classList.add('input-error');
+    document.getElementById('nome-erro').style.display='block';
+    nomeInput.focus();
+    return;
+  }
+  if(!maq){alert('Selecione o equipamento.');return;}
+  const items=loadItems().filter(i=>i.ativo);
+  if(!items.length){alert('Nenhum item ativo. Acesse o Administrador.');return;}
+  const agora=new Date();
+  state={
+    id:'ma_'+agora.getTime(),
+    matricula:mat,nome:nom,maquina:maq,
+    inicio:agora.toISOString(),
+    inicioFormatado:agora.toLocaleString('pt-BR',{dateStyle:'full',timeStyle:'medium'}),
+    itens:{}
+  };
+  items.forEach(it=>{state.itens[it.id]={status:null,foto:null,obs:'',fotoTs:null};});
+  document.getElementById('hdr-maquina').textContent=maq;
+  document.getElementById('hdr-info').textContent='Mat. '+mat+' · '+nom+' · '+agora.toLocaleString('pt-BR');
+  applyLogos();
+  buildItems(items);
+  goScreen('screen-checklist');
+  initSign();
+}
+
+function buildItems(items){
+  const c=document.getElementById('items-container');c.innerHTML='';
+  items.forEach((it,i)=>{
+    const cor=CORES[i%CORES.length];
+    const temFotoRef=!!it.foto;
+    const d=document.createElement('div');d.className='item-card';d.id='ic-'+it.id;
+    d.innerHTML=`<div class="item-header">
+      <div class="item-num">${i+1}</div>
+      <div class="item-title">${it.title}</div>
+      <span id="badge-${it.id}"></span>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:.75rem">${it.desc||''}</p>
+    <div class="ref-photo-box" onclick="showRef(${it.id})" style="${temFotoRef?'':`border-color:${cor}44;background:${cor}08`}">
+      ${temFotoRef
+        ?`<img src="${it.foto}" alt="Referência"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:12px;padding:4px 8px;font-weight:600">📌 Ver foto de referência</div>`
+        :`<span style="font-size:20px">🖼️</span><span style="color:${cor};font-weight:600;font-size:13px">Ver foto de referência</span><span style="font-size:11px;color:#aaa">Toque para ver o padrão aceitável</span>`
+      }
+    </div>
+    <div class="status-btns">
+      <div class="status-btn" id="sb-ok-${it.id}" onclick="setStatus(${it.id},'ok')">✅ Conforme</div>
+      <div class="status-btn" id="sb-at-${it.id}" onclick="setStatus(${it.id},'at')">⚠️ Atenção</div>
+      <div class="status-btn" id="sb-nc-${it.id}" onclick="setStatus(${it.id},'nc')">❌ Não conforme</div>
+    </div>
+    <div class="photo-capture" id="pa-${it.id}" onclick="openCamera(${it.id})">
+      <div style="font-size:22px">📷</div>
+      <p style="font-size:13px;color:#555;margin-top:4px;font-weight:500">Toque para tirar foto de comprovação</p>
+      <p style="font-size:11px;color:#aaa;margin-top:2px">🔒 Apenas câmera ao vivo — galeria bloqueada</p>
+    </div>
+    <textarea class="obs-field" rows="2" placeholder="Observações (opcional)..." oninput="state.itens[${it.id}].obs=this.value"></textarea>`;
+    c.appendChild(d);
+  });
+  updateProgress();
+}
+
+function setStatus(id,s){
+  state.itens[id].status=s;
+  ['ok','at','nc'].forEach(x=>{
+    const el=document.getElementById('sb-'+x+'-'+id);if(!el)return;
+    el.className='status-btn';if(x===s)el.classList.add('s-'+s);
+  });
+  const b=document.getElementById('badge-'+id);
+  if(b)b.innerHTML=s==='ok'?'<span class="badge badge-success">Conforme</span>':s==='nc'?'<span class="badge badge-danger">Não conforme</span>':'<span class="badge badge-warning">Atenção</span>';
+  updateProgress();
+  const activeItems=loadItems().filter(i=>i.ativo);
+  const ncs=activeItems.filter(i=>state.itens[i.id]&&state.itens[i.id].status==='nc');
+  const al=document.getElementById('alert-nc');
+  if(ncs.length){al.style.display='flex';document.getElementById('alert-nc-msg').textContent=ncs.length+' item(ns) não conforme(s): '+ncs.map(i=>i.title).join(', ');}
+  else al.style.display='none';
+}
+
+function updateProgress(){
+  const items=loadItems().filter(i=>i.ativo);
+  const total=items.length;
+  const done=items.filter(i=>state.itens[i.id]&&state.itens[i.id].status!==null).length;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('hdr-prog').textContent=done+'/'+total+' itens';
+}
+
+// CÂMERA
+function openCamera(itemId){
+  currentCamItem=itemId;
+  document.getElementById('modal-cam').classList.add('open');
+  const it=loadItems().find(i=>i.id===itemId);
+  document.getElementById('cam-title').textContent=it?.title||'Capturar foto';
+  document.getElementById('cam-msg').style.display='block';
+  document.getElementById('cam-msg').innerHTML='📷<br>Iniciando câmera...';
+  document.getElementById('camVideo').style.display='none';
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
+    .then(stream=>{
+      camStream=stream;
+      const v=document.getElementById('camVideo');v.srcObject=stream;v.style.display='block';
+      document.getElementById('cam-msg').style.display='none';
+    })
+    .catch(err=>{document.getElementById('cam-msg').innerHTML='<span style="color:#fff;font-size:13px">📷 Câmera não disponível.<br>Verifique as permissões do navegador.<br><em style="opacity:.7;font-size:11px">'+err.message+'</em></span>';});
+}
+function capturePhoto(){
+  const v=document.getElementById('camVideo');
+  if(!v.srcObject||!v.videoWidth){alert('Câmera não está ativa.');return;}
+  const cvs=document.getElementById('camCanvas');
+  cvs.width=v.videoWidth;cvs.height=v.videoHeight;
+  cvs.getContext('2d').drawImage(v,0,0);
+  const dataUrl=cvs.toDataURL('image/jpeg',.80);
+  const agora=new Date();
+  const ts=agora.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'medium'});
+  const tsCompleto=agora.toLocaleString('pt-BR',{dateStyle:'full',timeStyle:'medium'});
+  state.itens[currentCamItem].foto=dataUrl;
+  state.itens[currentCamItem].fotoTs=ts;
+  state.itens[currentCamItem].fotoTsCompleto=tsCompleto;
+  const area=document.getElementById('pa-'+currentCamItem);
+  area.className='photo-done';area.onclick=null;
+  area.innerHTML=`<img src="${dataUrl}" alt="Foto"><p style="font-size:12px;color:#166534;margin-top:5px;font-weight:600">✅ Foto registrada em ${ts}</p>`;
+  closeCamera();
+}
+function closeCamera(){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  const v=document.getElementById('camVideo');v.style.display='none';v.srcObject=null;
+  document.getElementById('modal-cam').classList.remove('open');
+}
+
+// REFERÊNCIA
+function showRef(id){
+  const it=loadItems().find(i=>i.id===id);
+  const cor=CORES[(id-1)%CORES.length];
+  document.getElementById('ref-modal-title').textContent='📌 '+(it?.title||'Referência');
+  document.getElementById('ref-content').innerHTML= it?.foto
+    ?`<img src="${it.foto}" style="width:100%;border-radius:8px;max-height:280px;object-fit:contain;background:#f3f4f6" alt="Foto de referência">
+      <div style="margin-top:.75rem;font-size:14px;color:#444;line-height:1.6"><strong>O que verificar:</strong> ${it.desc||''}</div>`
+    :`<div style="height:140px;border-radius:8px;background:${cor}15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1px dashed ${cor}44">
+        <span style="font-size:36px">🖼️</span>
+        <span style="font-size:13px;color:${cor};font-weight:600">Sem foto cadastrada</span>
+        <span style="font-size:12px;color:#aaa">O administrador pode adicionar no painel de configuração</span>
+      </div>
+      <div style="margin-top:.75rem;font-size:14px;color:#444;line-height:1.6"><strong>O que verificar:</strong> ${it?.desc||''}</div>`;
+  document.getElementById('modal-ref').classList.add('open');
+}
+function closeRef(){document.getElementById('modal-ref').classList.remove('open');}
+
+// ASSINATURA
+function initSign(){
+  const cvs=document.getElementById('signCanvas');
+  signCtx=cvs.getContext('2d');
+  signCtx.strokeStyle='#1a1a1a';signCtx.lineWidth=2.5;signCtx.lineCap='round';signCtx.lineJoin='round';
+  const p=(e,c)=>{const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return[(t.clientX-r.left)*(c.width/r.width),(t.clientY-r.top)*(c.height/r.height)];};
+  cvs.onmousedown=e=>{signDrawing=true;signCtx.beginPath();signCtx.moveTo(...p(e,cvs));};
+  cvs.onmousemove=e=>{if(!signDrawing)return;signCtx.lineTo(...p(e,cvs));signCtx.stroke();};
+  cvs.onmouseup=cvs.onmouseleave=()=>{signDrawing=false;};
+  cvs.ontouchstart=e=>{e.preventDefault();signDrawing=true;signCtx.beginPath();signCtx.moveTo(...p(e,cvs));};
+  cvs.ontouchmove=e=>{e.preventDefault();if(!signDrawing)return;signCtx.lineTo(...p(e,cvs));signCtx.stroke();};
+  cvs.ontouchend=()=>{signDrawing=false;};
+}
+function clearSign(){signCtx&&signCtx.clearRect(0,0,document.getElementById('signCanvas').width,200);}
+function signIsEmpty(){
+  const c=document.getElementById('signCanvas');if(!signCtx)return true;
+  return signCtx.getImageData(0,0,c.width,c.height).data.every(v=>v===0);
+}
+
+// FINALIZAR
+function finalizarChecklist(){
+  const activeItems=loadItems().filter(i=>i.ativo);
+  const pend=activeItems.filter(i=>!state.itens[i.id]?.status);
+  if(pend.length){alert('Preencha o status de todos os itens.\nFaltam: '+pend.map(i=>i.title).join(', '));return;}
+  const semFoto=activeItems.filter(i=>!state.itens[i.id]?.foto);
+  if(semFoto.length){alert('Registre a foto de todos os itens.\nFaltam: '+semFoto.map(i=>i.title).join(', '));return;}
+  if(signIsEmpty()){alert('Assine antes de finalizar.');return;}
+  const agora=new Date();
+  state.assinatura=document.getElementById('signCanvas').toDataURL('image/png');
+  state.fim=agora.toISOString();
+  state.fimFormatado=agora.toLocaleString('pt-BR',{dateStyle:'full',timeStyle:'medium'});
+  const ncs=activeItems.filter(i=>state.itens[i.id]?.status==='nc');
+  const ats=activeItems.filter(i=>state.itens[i.id]?.status==='at');
+  state.totalNc=ncs.length;state.totalAt=ats.length;
+  state.totalOk=activeItems.filter(i=>state.itens[i.id]?.status==='ok').length;
+  state.activeItemsSnapshot=activeItems;
+  const h=loadHistory();h.unshift(state);saveHistory(h);
+  const ini=new Date(state.inicio),fim=new Date(state.fim);
+  const dur=Math.round((fim-ini)/60000);
+  applyLogos();
+  document.getElementById('ok-sub').textContent=state.maquina+' · '+ini.toLocaleString('pt-BR')+' · '+dur+' min';
+  let rows='';
+  activeItems.forEach(it=>{
+    const s=state.itens[it.id]?.status;
+    const cl=s==='ok'?'badge-success':s==='nc'?'badge-danger':'badge-warning';
+    const lb=s==='ok'?'Conforme':s==='nc'?'Não conforme':'Atenção';
+    rows+=`<div class="hist-row"><span style="font-size:14px">${it.title}</span><span class="badge ${cl}">${lb}</span></div>`;
+  });
+  document.getElementById('ok-summary').innerHTML=`
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-num" style="color:#166534">${state.totalOk}</div><div class="metric-label">Conformes</div></div>
+      <div class="metric"><div class="metric-num" style="color:#854d0e">${state.totalAt}</div><div class="metric-label">Atenção</div></div>
+      <div class="metric"><div class="metric-num" style="color:#991b1b">${state.totalNc}</div><div class="metric-label">Não conformes</div></div>
+    </div>${rows}
+    <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid #f3f4f6;font-size:13px;color:#888">
+      <div>${state.nome} · Matrícula ${state.matricula}</div>
+      <div style="margin-top:3px">🕐 Início: ${state.inicioFormatado}</div>
+      <div>🏁 Conclusão: ${state.fimFormatado}</div>
+    </div>`;
+  if(ncs.length){document.getElementById('ok-nc-alert').style.display='flex';document.getElementById('ok-nc-list').textContent=ncs.map(i=>i.title).join(', ');}
+  else document.getElementById('ok-nc-alert').style.display='none';
+  goScreen('screen-ok');
+}
+
+// HISTÓRICO
+function renderHist(filter){
+  let data=loadHistory();
+  if(filter==='ok')data=data.filter(h=>h.totalNc===0);
+  if(filter==='nc')data=data.filter(h=>h.totalNc>0);
+  const list=document.getElementById('hist-list');
+  if(!data.length){list.innerHTML='<p style="font-size:14px;color:#888;text-align:center;padding:2rem">Nenhum registro encontrado.</p>';return;}
+  list.innerHTML=data.map((h,i)=>{
+    const d=new Date(h.inicio);
+    return`<div class="hist-row">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.maquina}</div>
+        <div style="font-size:12px;color:#888">${h.nome} · Mat. ${h.matricula}</div>
+        <div style="font-size:12px;color:#888">🕐 ${d.toLocaleString('pt-BR')}</div>
+        <div style="font-size:12px;margin-top:3px"><span style="color:#166534">✅ ${h.totalOk}</span><span style="color:#854d0e;margin:0 6px">⚠️ ${h.totalAt}</span><span style="color:#991b1b">❌ ${h.totalNc}</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+        ${h.totalNc>0?'<span class="badge badge-danger">'+h.totalNc+' NC</span>':'<span class="badge badge-success">OK</span>'}
+        <button class="btn-secondary btn-sm" onclick="verDetalhe(${i},'${filter}')">Ver detalhe</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterHist(f,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderHist(f);}
+
+function verDetalhe(idx,filter){
+  let data=loadHistory();
+  if(filter==='ok')data=data.filter(h=>h.totalNc===0);
+  if(filter==='nc')data=data.filter(h=>h.totalNc>0);
+  const h=data[idx];if(!h)return;
+  const ini=new Date(h.inicio),fim=new Date(h.fim),dur=Math.round((fim-ini)/60000);
+  const items=h.activeItemsSnapshot||loadItems().filter(i=>i.ativo);
+  let rows='';
+  items.forEach(it=>{
+    const si=h.itens[it.id];if(!si)return;
+    const s=si.status,cl=s==='ok'?'badge-success':s==='nc'?'badge-danger':'badge-warning',lb=s==='ok'?'Conforme':s==='nc'?'Não conforme':'Atenção';
+    rows+=`<div class="item-card">
+      <div class="item-header"><div class="item-num">${it.id}</div><div class="item-title">${it.title}</div><span class="badge ${cl}">${lb}</span></div>
+      ${si.foto?`<img src="${si.foto}" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-bottom:.5rem" alt="Foto">`:''}
+      ${si.fotoTsCompleto?`<p style="font-size:12px;color:#888;margin-bottom:.5rem">📷 Foto registrada em: <strong>${si.fotoTsCompleto}</strong></p>`:''}
+      ${si.obs?`<p style="font-size:13px;color:#555">Obs: ${si.obs}</p>`:''}
+    </div>`;
+  });
+  document.getElementById('detalhe-content').innerHTML=`
+    <div class="card">
+      <div style="font-size:16px;font-weight:700;margin-bottom:.5rem">${h.maquina}</div>
+      <div style="font-size:14px;color:#444"><strong>Colaborador:</strong> ${h.nome}</div>
+      <div style="font-size:14px;color:#444"><strong>Matrícula:</strong> ${h.matricula}</div>
+      <div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid #f3f4f6;font-size:13px;color:#666">
+        <div>🕐 Início: <strong>${h.inicioFormatado||ini.toLocaleString('pt-BR')}</strong></div>
+        <div>🏁 Conclusão: <strong>${h.fimFormatado||fim.toLocaleString('pt-BR')}</strong></div>
+        <div>⏱️ Duração: <strong>${dur} minuto(s)</strong></div>
+      </div>
+    </div>
+    <div class="metric-grid" style="margin-bottom:1rem">
+      <div class="metric"><div class="metric-num" style="color:#166534">${h.totalOk}</div><div class="metric-label">Conformes</div></div>
+      <div class="metric"><div class="metric-num" style="color:#854d0e">${h.totalAt}</div><div class="metric-label">Atenção</div></div>
+      <div class="metric"><div class="metric-num" style="color:#991b1b">${h.totalNc}</div><div class="metric-label">Não conformes</div></div>
+    </div>${rows}
+    ${h.assinatura?`<div class="card"><div class="section-title">Assinatura digital</div><img src="${h.assinatura}" style="width:100%;max-height:120px;object-fit:contain;background:#f9fafb;border-radius:8px" alt="Assinatura"></div>`:''}
+    <button class="btn-secondary" style="width:100%;margin-top:.5rem;margin-bottom:1rem" onclick="gerarPDF()">📄 Exportar relatório PDF</button>`;
+  goScreen('screen-detalhe');
+}
+function gerarPDF(){alert('Para exportar em PDF:\n1. Pressione Ctrl+P (ou Cmd+P no Mac)\n2. Em "Destino" escolha "Salvar como PDF"\n3. Clique em Salvar');}
+
+window.onload=function(){
+  const h=loadHistory();
+  const el=document.getElementById('hist-count-label');
+  if(el)el.textContent=h.length+' registro(s)';
+  applyLogos();
+  document.querySelectorAll('.modal-overlay').forEach(m=>{
+    m.addEventListener('click',e=>{if(e.target===m){if(m.id==='modal-cam')closeCamera();else if(m.id==='modal-ref')closeRef();else if(m.id==='modal-cancel')closeCancel();}});
+  });
+};
+</script>
+</body>
+</html>
